@@ -1,0 +1,10 @@
+{
+  "name": "Word Coach Ultra",
+  "short_name": "WordCoach",
+  "description": "TalkBack-first vocabulary games: flashcards, meaning quiz, spelling bee, word chain. English with Telugu glosses.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#14100a",
+  "theme_color": "#f5a623",
+  "icons": []
+}

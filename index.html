@@ -1,1 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5a623">
+<meta name="description" content="Word Coach Ultra — TalkBack-first vocabulary games: flashcards, meaning quiz, spelling bee, word chain, word of the day. English with Telugu glosses.">
+<title>Word Coach Ultra 📚</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#game-panel">Skip to game</a>
+<div id="app">
+  <header role="banner">
+    <span class="logo" aria-hidden="true">📚</span>
+    <div class="brand">
+      <h1>Word Coach Ultra</h1>
+      <p>Vocabulary games for sharp minds — English + తెలుగు</p>
+    </div>
+    <div class="wallet" role="status" aria-label="Your rewards">
+      <span id="w-coins" title="Coins">🪙 0</span>
+      <span id="w-level" title="Level">⭐ Lv 1</span>
+      <span id="w-streak" title="Streak">🔥 0</span>
+    </div>
+    <button id="btn-settings" class="hbtn" aria-label="Open settings">⚙️</button>
+  </header>
 
+  <main id="home" aria-label="Game menu">
+    <div id="wotd" class="card wotd" aria-labelledby="wotd-title">
+      <h2 id="wotd-title">🌅 Word of the Day</h2>
+      <p class="big-word" id="wotd-word">…</p>
+      <p id="wotd-meaning">…</p>
+      <p class="telugu" id="wotd-telugu">…</p>
+      <p class="example" id="wotd-example">…</p>
+      <button id="wotd-hear" class="primary">🔊 Hear it</button>
+    </div>
+
+    <div class="menu-grid" role="list">
+      <button class="game-btn" data-game="flashcards" role="listitem"><span aria-hidden="true">🃏</span> Flashcards<small>Flip &amp; learn with voice</small></button>
+      <button class="game-btn" data-game="quiz" role="listitem"><span aria-hidden="true">❓</span> Meaning Quiz<small>10 questions, 4 choices</small></button>
+      <button class="game-btn" data-game="spelling" role="listitem"><span aria-hidden="true">🐝</span> Spelling Bee<small>Listen &amp; type the word</small></button>
+      <button class="game-btn" data-game="chain" role="listitem"><span aria-hidden="true">⛓️</span> Word Chain vs AI<small>Last-letter battle</small></button>
+    </div>
+
+    <div class="level-pick">
+      <label for="level-select">Word difficulty:</label>
+      <select id="level-select">
+        <option value="0">All words</option>
+        <option value="1">Level 1 — Everyday</option>
+        <option value="2">Level 2 — Exam</option>
+        <option value="3" selected>Level 3 — Advanced</option>
+      </select>
+    </div>
+
+    <button id="btn-daily" class="daily">🎁 Claim daily bonus (+25 🪙)</button>
+
+    <details class="howto">
+      <summary>How to play (screen-reader friendly)</summary>
+      <ul>
+        <li><strong>Flashcards:</strong> hear the word, flip for meaning, mark Know or Again.</li>
+        <li><strong>Meaning Quiz:</strong> pick the right meaning from 4 options. Streaks earn bonus coins.</li>
+        <li><strong>Spelling Bee:</strong> the app speaks a word — type it correctly. Use "Hear example" as a hint.</li>
+        <li><strong>Word Chain:</strong> your word must start with the last letter of the AI's word. Only words from the built-in 120-word bank count.</li>
+      </ul>
+    </details>
+  </main>
+
+  <main id="game-panel" hidden aria-label="Game screen">
+    <div class="game-bar">
+      <button id="btn-home" aria-label="Back to menu">← Menu</button>
+      <h2 id="game-title">Game</h2>
+      <p id="game-status" role="status" aria-live="polite"></p>
+    </div>
+    <div id="game-stage"></div>
+  </main>
+
+  <div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+    <div class="dialog">
+      <h2 id="settings-title">⚙️ Settings</h2>
+      <label class="check"><input id="set-tts" type="checkbox"> Read words and results aloud</label>
+      <label>Speech speed <span id="rate-val">1.0×</span><input id="set-rate" type="range" min="0.5" max="2" step="0.1"></label>
+      <label class="check"><input id="set-sounds" type="checkbox"> Sound effects</label>
+      <label class="check"><input id="set-light" type="checkbox"> Light theme</label>
+      <label class="check"><input id="set-large" type="checkbox"> Large text</label>
+      <div class="dialog-actions">
+        <button id="btn-reset-prog" class="danger">🗑️ Reset coins &amp; progress</button>
+        <button id="btn-close-settings" class="primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="aria-log" class="sr-only" role="status" aria-live="polite" aria-atomic="false"></div>
+  <div id="aria-alert" class="sr-only" role="alert" aria-live="assertive"></div>
+</div>
+<script src="words.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
