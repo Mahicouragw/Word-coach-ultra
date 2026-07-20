@@ -57,11 +57,14 @@ jobs:
           flutter pub get
           flutter build apk --debug
 
+      - name: Give the APK a friendly name
+        run: cp flutter_apk/build/app/outputs/flutter-apk/app-debug.apk flutter_apk/build/app/outputs/flutter-apk/WordCoachUltra.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: word-coach-ultra-apk
-          path: flutter_apk/build/app/outputs/flutter-apk/app-debug.apk
+          path: flutter_apk/build/app/outputs/flutter-apk/WordCoachUltra.apk
           retention-days: 90
 
       - name: Upload APK as Release (outage-proof)
@@ -69,6 +72,6 @@ jobs:
         run: python3 .github/scripts/release_apk.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APK_PATH: flutter_apk/build/app/outputs/flutter-apk/app-debug.apk
+          APK_PATH: flutter_apk/build/app/outputs/flutter-apk/WordCoachUltra.apk
           TAG_BASE: flutter-apk
           RELEASE_NAME: Word Coach Ultra APK

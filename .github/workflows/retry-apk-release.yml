@@ -39,10 +39,12 @@ jobs:
       - run: |
           cd flutter_apk
           flutter build apk --debug
+      - name: Give the APK a friendly name
+        run: cp flutter_apk/build/app/outputs/flutter-apk/app-debug.apk flutter_apk/build/app/outputs/flutter-apk/WordCoachUltra.apk
       - name: Publish release (outage-proof)
         run: python3 .github/scripts/release_apk.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APK_PATH: flutter_apk/build/app/outputs/flutter-apk/app-debug.apk
+          APK_PATH: flutter_apk/build/app/outputs/flutter-apk/WordCoachUltra.apk
           TAG_BASE: flutter-apk
           RELEASE_NAME: Word Coach Ultra APK
