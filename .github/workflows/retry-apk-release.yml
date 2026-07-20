@@ -1,0 +1,48 @@
+name: Retry APK Release
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rebuild-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: |
+          cd flutter_apk
+          flutter pub get
+          flutter create --platforms=android --project-name word_coach --org com.mahicouragw .
+      - name: Add internet permission & app label
+        run: |
+          python3 - <<'EOF'
+          import re
+          p = 'flutter_apk/android/app/src/main/AndroidManifest.xml'
+          s = open(p).read()
+          if 'android.permission.INTERNET' not in s:
+              s = s.replace('<application',
+                            '    <uses-permission android:name="android.permission.INTERNET"/>\n    <application', 1)
+          s = re.sub(r'android:label="[^"]*"', 'android:label="Word Coach Ultra"', s, count=1)
+          open(p, 'w').write(s)
+          print('Manifest patched')
+          EOF
+      - run: |
+          cd flutter_apk
+          flutter build apk --debug
+      - name: Publish release (outage-proof)
+        run: python3 .github/scripts/release_apk.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APK_PATH: flutter_apk/build/app/outputs/flutter-apk/app-debug.apk
+          TAG_BASE: flutter-apk
+          RELEASE_NAME: Word Coach Ultra APK

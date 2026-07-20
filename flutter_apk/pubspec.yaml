@@ -1,0 +1,16 @@
+name: word_coach_apk
+description: "Word Coach Ultra - TalkBack-first vocabulary games, wrapped natively for Android."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.7.0
+  webview_flutter_android: ^4.3.0
+
+flutter:
+  uses-material-design: true
