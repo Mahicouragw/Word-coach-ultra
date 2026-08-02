@@ -11,11 +11,28 @@ const WORDS = BANK.map(([word, meaning, telugu, example, level]) => ({ word, mea
 
 // ---------------- rewards ----------------
 const KEY = 'wcu_progress_v1';
-const defaults = { coins: 0, xp: 0, streak: 0, bestStreak: 0, lastDaily: '', games: 0, known: [] };
+const defaults = { coins: 0, xp: 0, streak: 0, bestStreak: 0, lastDaily: '', games: 0, known: [], review: [], right: 0, wrong: 0 };
 let prog = defaults;
 try { prog = Object.assign({}, defaults, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
 const saveProg = () => localStorage.setItem(KEY, JSON.stringify(prog));
 const level = () => 1 + Math.floor(prog.xp / 100);
+
+// v2.0.0 — word mastery tracking: correct answers grow the "known" list, wrong
+// answers go to the Review Deck so weak words always come back.
+function rememberResult(word, correct) {
+    const key = word.toLowerCase();
+    prog.right += correct ? 1 : 0;
+    prog.wrong += correct ? 0 : 1;
+    if (correct) {
+        if (!prog.known.includes(key)) prog.known.push(key);
+        prog.review = (prog.review || []).filter(w => w.toLowerCase() !== key);
+    } else {
+        if (!prog.review.includes(key)) prog.review.push(key);
+    }
+    if (prog.review.length > 100) prog.review = prog.review.slice(-100);
+    saveProg();
+}
+
 function addCoins(n, why) {
     prog.coins += n; prog.xp += Math.max(0, n);
     saveProg(); renderWallet();
@@ -41,21 +58,36 @@ let settings = { tts: true, rate: 1.0, sounds: true, light: false, large: false 
 try { settings = Object.assign(settings, JSON.parse(localStorage.getItem('wcu_settings_v1') || '{}')); } catch (e) {}
 const saveSettings = () => localStorage.setItem('wcu_settings_v1', JSON.stringify(settings));
 let audioCtx = null;
+// v2.0.1 — real royalty-free sounds (Kenney.nl CC0), preloaded + cached for offline.
+const SFX_FILES = {
+    good: 'sounds/ui-good.ogg',
+    bad: 'sounds/ui-bad.ogg',
+    coin: 'sounds/ui-coin.ogg',
+    flip: 'sounds/ui-flip.ogg',
+    click: 'sounds/ui-click.ogg',
+};
+const sfxCache = {};
 function sfx(kind) {
     if (!settings.sounds) return;
+    const url = SFX_FILES[kind] || SFX_FILES.click;
     try {
         audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = { good: [660, 880], bad: [220], coin: [990, 1320], flip: [440] }[kind] || [520];
-        notes.forEach((f, i) => {
-            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.frequency.value = f; o.type = 'sine';
-            g.gain.setValueAtTime(0.001, audioCtx.currentTime + i * 0.09);
-            g.gain.exponentialRampToValueAtTime(0.14, audioCtx.currentTime + i * 0.09 + 0.02);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.09 + 0.16);
-            o.connect(g).connect(audioCtx.destination);
-            o.start(audioCtx.currentTime + i * 0.09); o.stop(audioCtx.currentTime + i * 0.09 + 0.18);
-        });
+        // Preload + cache the decoded buffer on first use (offline-safe).
+        const playCached = (buffer) => {
+            const src = audioCtx.createBufferSource();
+            src.buffer = buffer;
+            const g = audioCtx.createGain();
+            g.gain.value = 0.5;
+            src.connect(g).connect(audioCtx.destination);
+            src.start(0);
+        };
+        if (sfxCache[url]) { playCached(sfxCache[url]); return; }
+        fetch(url)
+            .then(r => r.arrayBuffer())
+            .then(buf => audioCtx.decodeAudioData(buf))
+            .then(decoded => { sfxCache[url] = decoded; playCached(decoded); })
+            .catch(() => { /* file unavailable — stay silent rather than synthesize */ });
     } catch (e) {}
 }
 function say(text, slow) {
@@ -133,8 +165,8 @@ const flash = {
             sfx('flip');
             if (this.flipped) { announce(`${this.card.word} means: ${this.card.meaning}. Telugu: ${this.card.telugu}`); say(`${this.card.word}. ${this.card.meaning}`); }
         };
-        $('fc-know').onclick = () => { this.queue.shift(); this.knownCount++; addCoins(2, 'word learned'); sfx('coin'); this.next(); };
-        $('fc-again').onclick = () => { const c = this.queue.shift(); this.queue.splice(Math.min(3, this.queue.length), 0, c); announce(`${c.word} will come back soon.`); this.next(); };
+        $('fc-know').onclick = () => { this.queue.shift(); this.knownCount++; rememberResult(this.card.word, true); addCoins(2, 'word learned'); sfx('coin'); this.next(); };
+        $('fc-again').onclick = () => { const c = this.queue.shift(); this.queue.splice(Math.min(3, this.queue.length), 0, c); rememberResult(c.word, false); announce(`${c.word} will come back soon — it is saved to your Review Deck.`); this.next(); };
         say(this.card.word);
     },
     finish() {
@@ -174,13 +206,14 @@ const quiz = {
             document.querySelectorAll('#q-opts .opt').forEach(b => { b.disabled = true; if (b.dataset.w === w.word) b.classList.add('correct'); });
             if (right) {
                 btn.classList.add('correct'); this.score++;
+                rememberResult(w.word, true);
                 const bonus = prog.streak >= 2 ? 5 : 0;
                 addCoins(10 + bonus, 'correct answer'); bumpStreak(true); sfx('good');
                 announce(`Correct! ${w.word} means: ${w.meaning}. ${bonus ? 'Streak bonus +5!' : ''}`, true);
                 say(`Correct! ${w.word} means ${w.meaning}`);
             } else {
-                btn.classList.add('wrong'); bumpStreak(false); sfx('bad');
-                announce(`Not quite. ${w.word} actually means: ${w.meaning}.`, true);
+                btn.classList.add('wrong'); bumpStreak(false); rememberResult(w.word, false); sfx('bad');
+                announce(`Not quite. ${w.word} actually means: ${w.meaning}. ${w.word} was added to your Review Deck.`, true);
                 say(`The right answer is: ${w.meaning}`);
             }
             this.i++;
@@ -241,13 +274,14 @@ const bee = {
         if (!typed) { announce('Type your spelling first.', true); return; }
         if (typed === w.word.toLowerCase()) {
             this.score++;
+            rememberResult(w.word, true);
             addCoins(Math.max(4, w.word.length), 'spelled correctly'); bumpStreak(true); sfx('good');
             announce(`Correct spelling! ${w.word}. Well done.`, true); say(`Correct! ${w.word}`);
             this.i++; setTimeout(() => this.ask(), 1300);
         } else {
-            bumpStreak(false); sfx('bad');
+            bumpStreak(false); rememberResult(w.word, false); sfx('bad');
             const letters = w.word.toUpperCase().split('').join(' ');
-            announce(`Not quite. The correct spelling of ${w.word} is: ${letters}.`, true);
+            announce(`Not quite. The correct spelling of ${w.word} is: ${letters}. It was added to your Review Deck.`, true);
             say(`The correct spelling is ${letters}`);
             $('b-feed').innerHTML = `❌ Correct spelling: <strong>${esc(w.word)}</strong> (${esc(w.meaning)})`;
             this.i++; setTimeout(() => this.ask(), 3200);
@@ -336,7 +370,86 @@ const chain = {
     }
 };
 
-const GAMES = { flashcards: flash, quiz, spelling: bee, chain };
+// ---------------- Game 5: Review Deck (v2.0.0) ----------------
+// Every word you missed in any game lands here. Clear the deck by proving
+// you know each word; coins grow with the streak.
+const review = {
+    queue: [], i: 0, streak: 0,
+    start() {
+        $('game-title').textContent = '🔁 Review Deck';
+        const words = (prog.review || []).map(k => WORDS.find(w => w.word.toLowerCase() === k)).filter(Boolean);
+        this.queue = shuffle(words.length ? words : WORDS.slice(0, 10));
+        this.i = 0; this.streak = 0;
+        announce(`Review Deck. ${words.length ? words.length : 10} weak words to review. Hear the word, then choose Know or Again.`);
+        this.ask();
+    },
+    ask() {
+        if (this.i >= this.queue.length) return this.finish();
+        const w = this.queue[this.i];
+        setStatus(`Review ${this.i + 1} of ${this.queue.length} · streak ${this.streak}`);
+        setStage(`<p class="progress-line">Reviewing a word you found hard. Listen, then try to recall its meaning.</p>
+            <p class="big-word" id="r-word">${esc(w.word)}</p>
+            <div class="row">
+              <button class="primary" id="r-hear">🔊 Hear</button>
+              <button class="primary" id="r-reveal">💡 Reveal meaning</button>
+            </div>
+            <div id="r-back" hidden>
+              <p><strong>${esc(w.meaning)}</strong></p>
+              <p class="telugu">తెలుగు: ${esc(w.telugu)}</p>
+              <p class="example">“${esc(w.example)}”</p>
+            </div>
+            <div class="row" id="r-actions" hidden>
+              <button class="primary" id="r-know">✅ I know it now</button>
+              <button id="r-again">🔁 Still learning</button>
+            </div>`);
+        $('r-hear').onclick = () => say(w.word);
+        $('r-reveal').onclick = () => {
+            $('r-back').hidden = false; $('r-actions').hidden = false;
+            sfx('flip');
+            announce(`${w.word} means: ${w.meaning}. Telugu: ${w.telugu}`);
+        };
+        $('r-know').onclick = () => {
+            rememberResult(w.word, true);
+            this.streak++;
+            addCoins(3 + Math.min(7, this.streak), 'review mastered');
+            sfx('good'); this.i++; this.ask();
+        };
+        $('r-again').onclick = () => {
+            rememberResult(w.word, false);
+            sfx('bad'); this.i++; this.ask();
+        };
+        say(w.word);
+    },
+    finish() {
+        prog.games++; saveProg();
+        const remaining = (prog.review || []).length;
+        setStage(`<p class="big-word">🎯 Review Deck done</p>
+            <p>Remaining weak words: <strong>${remaining}</strong>. They stay in the deck until you master them.</p>
+            <p class="coins-note">Wallet: 🪙 ${prog.coins} · ⭐ Level ${level()}</p>
+            <div class="row"><button class="primary" id="r-restart">🔁 Review again</button><button class="primary" id="r-menu">← Menu</button></div>`);
+        setStatus('');
+        announce(remaining ? `Review complete. ${remaining} words still need practice.` : 'Review complete. Review Deck cleared — every word mastered!');
+        say(remaining ? 'Review complete. Keep practising the remaining words.' : 'Amazing! You cleared your Review Deck.');
+        $('r-restart').onclick = () => this.start();
+        $('r-menu').onclick = showHome;
+    }
+};
+
+// ---------------- Progress & stats (v2.0.0) ----------------
+function showStats() {
+    const knownCount = (prog.known || []).length;
+    const total = prog.right + prog.wrong;
+    const acc = total ? Math.round((prog.right / total) * 100) : 0;
+    $('st-games').textContent = prog.games;
+    $('st-known').textContent = knownCount;
+    $('st-review').textContent = (prog.review || []).length;
+    $('st-accuracy').textContent = total ? `${acc}% (${prog.right} right, ${prog.wrong} wrong)` : '—';
+    $('st-best').textContent = `🔥 ${prog.bestStreak}`;
+    $('st-bank').textContent = `${WORDS.length} words`;
+    $('stats-modal').hidden = false;
+}
+
+const GAMES = { flashcards: flash, quiz, spelling: bee, chain, review };
 
 // ---------------- settings ----------------
 function applySettings() {
@@ -381,10 +494,31 @@ function init() {
     document.querySelectorAll('.game-btn').forEach(b => b.onclick = () => startGame(b.dataset.game));
     $('btn-home').onclick = showHome;
     $('btn-daily').onclick = dailyBonus;
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-    announce(`Welcome to Word Coach Ultra. ${WORDS.length} words loaded across 3 levels. Choose a game: Flashcards, Meaning Quiz, Spelling Bee, or Word Chain.`);
+    $('btn-review').onclick = () => startGame('review');
+    $('btn-stats').onclick = showStats;
+    $('btn-close-stats').onclick = () => { $('stats-modal').hidden = true; };
+
+    // v2.0.0 — automatic updates: a new service worker tells us when a fresh
+    // version is cached; we announce it and offer an instant reload.
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'WCU_APP_UPDATED') {
+                const btn = $('btn-update');
+                if (btn) btn.hidden = false;
+                announce('A new version of Word Coach Ultra is ready. Tap Update to refresh.', true);
+            }
+        });
+        $('btn-update').onclick = () => {
+            const reg = () => navigator.serviceWorker.getRegistration().then(r => { if (r && r.waiting) r.waiting.postMessage({ type: 'WCU_SKIP_WAITING' }); });
+            reg().then(() => setTimeout(() => location.reload(), 250));
+        };
+    }
+
+    const reviewCount = (prog.review || []).length;
+    announce(`Welcome to Word Coach Ultra. ${WORDS.length} words loaded across 3 levels. ${reviewCount ? `${reviewCount} words await review. ` : ''}Choose a game: Flashcards, Meaning Quiz, Spelling Bee, Word Chain, or Review Deck.`);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-window.WCU = { get prog() { return prog; }, GAMES, startGame, announce, WORDS };
+window.WCU = { get prog() { return prog; }, GAMES, startGame, announce, showStats, WORDS };
 })();
