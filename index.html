@@ -4,124 +4,142 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-<link rel="mask-icon" href="./icon-192-maskable.png" color="#f5a623">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#f5a623">
-<meta name="description" content="Word Coach Ultra — TalkBack-first vocabulary games: flashcards, meaning quiz, spelling bee, word chain, word of the day. English with Telugu glosses.">
-<title>Word Coach Ultra 📚</title>
+<meta name="description" content="Word Coach Ultra — Real dictionary with meanings, synonyms, antonyms, examples. English↔Telugu academic vocabulary coach.">
+<title>Word Coach Ultra 📚 Real Dictionary & Coach</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 <script type="module" src="auth.js"></script>
 </head>
 <body>
-<a class="skip-link" href="#game-panel">Skip to game</a>
+<a class="skip-link" href="#game-stage">Skip to game</a>
 <div id="app">
   <header role="banner">
-    <span class="logo" aria-hidden="true">📚</span>
-    <div class="brand">
-      <h1>Word Coach Ultra</h1>
-      <p>Vocabulary games for sharp minds — English + తెలుగు</p>
+    <div class="brand-row">
+      <span class="logo" aria-hidden="true">📚</span>
+      <div class="brand">
+        <h1>Word Coach Ultra</h1>
+        <p>Real Dictionary • English ↔ తెలుగు • Academic Coach</p>
+      </div>
+      <div class="wallet" role="status" aria-label="Your rewards">
+        <span id="w-coins" title="Coins">🪙 0</span>
+        <span id="w-level" title="Level">⭐ Lv 1</span>
+        <span id="w-streak" title="Streak">🔥 0</span>
+      </div>
+      <button id="btn-settings" class="hbtn" aria-label="Open settings">⚙️</button>
     </div>
-    <div class="wallet" role="status" aria-label="Your rewards">
-      <span id="w-coins" title="Coins">🪙 0</span>
-      <span id="w-level" title="Level">⭐ Lv 1</span>
-      <span id="w-streak" title="Streak">🔥 0</span>
+
+    <!-- Language selector -->
+    <div class="lang-bar" role="group" aria-label="Select language direction">
+      <span class="lang-label">Language:</span>
+      <button class="lang-pill active" data-lang="mixed" aria-pressed="true">🌐 Mixed</button>
+      <button class="lang-pill" data-lang="en-te" aria-pressed="false">🇬🇧 → తెలుగు</button>
+      <button class="lang-pill" data-lang="te-en" aria-pressed="false">తెలుగు → 🇬🇧</button>
+      <button class="lang-pill" data-lang="en-en" aria-pressed="false">🇬🇧 → English</button>
     </div>
-    <button id="btn-settings" class="hbtn" aria-label="Open settings">⚙️</button>
   </header>
 
-  <main id="home" aria-label="Game menu">
+  <!-- Game mode tabs - game appears immediately, no screenshot -->
+  <nav class="mode-tabs" role="tablist" aria-label="Game modes">
+    <button class="mode-tab active" data-mode="quiz" role="tab" aria-selected="true">❓ Coach Quiz</button>
+    <button class="mode-tab" data-mode="dictionary" role="tab" aria-selected="false">📖 Dictionary</button>
+    <button class="mode-tab" data-mode="flashcards" role="tab" aria-selected="false">🃏 Flashcards</button>
+    <button class="mode-tab" data-mode="spelling" role="tab" aria-selected="false">🐝 Spelling</button>
+    <button class="mode-tab" data-mode="chain" role="tab" aria-selected="false">⛓️ Chain</button>
+    <button class="mode-tab" data-mode="review" role="tab" aria-selected="false">🔁 Review</button>
+  </nav>
+
+  <!-- Real dictionary search - always visible -->
+  <section class="dict-search" aria-label="Dictionary search">
+    <div class="search-row">
+      <input id="dict-input" type="search" placeholder="Search dictionary: type English or తెలుగు word... e.g. benevolent, పర్యావరణం, fiscal" aria-label="Search dictionary">
+      <button id="dict-clear" class="hbtn" aria-label="Clear search">✕</button>
+      <button id="btn-hear-search" class="primary small" aria-label="Hear search">🔊</button>
+    </div>
+    <div id="dict-results" class="dict-results" role="listbox" aria-label="Search results"></div>
+  </section>
+
+  <!-- Main game - VISIBLE IMMEDIATELY, no hidden screenshot -->
+  <main id="game-panel" aria-label="Game screen">
+    <div class="game-bar">
+      <h2 id="game-title">❓ Word Coach Quiz</h2>
+      <p id="game-status" role="status" aria-live="polite"></p>
+      <div class="game-actions">
+        <button id="btn-hear-q" class="hbtn" aria-label="Hear question">🔊</button>
+      </div>
+    </div>
+
+    <!-- This stage is visible from start -->
+    <div id="game-stage" aria-live="polite">
+      <!-- JS will render instantly -->
+      <p class="loading">Loading 583 academic words…</p>
+    </div>
+
+    <!-- Feedback & dictionary card area - appears after answer -->
+    <div id="feedback-area" hidden>
+      <!-- JS injects result banner + dictionary card -->
+    </div>
+  </main>
+
+  <!-- Extra panels -->
+  <section class="bottom-row">
     <div id="wotd" class="card wotd" aria-labelledby="wotd-title">
       <h2 id="wotd-title">🌅 Word of the Day</h2>
       <p class="big-word" id="wotd-word">…</p>
-      <p id="wotd-meaning">…</p>
-      <p class="telugu" id="wotd-telugu">…</p>
+      <p id="wotd-pos" class="pos-tag"></p>
+      <p id="wotd-meaning"></p>
+      <p class="telugu" id="wotd-telugu"></p>
+      <div id="wotd-synant" class="mini-synant"></div>
       <p class="example" id="wotd-example">…</p>
-      <button id="wotd-hear" class="primary">🔊 Hear it</button>
+      <button id="wotd-hear" class="primary">🔊 Hear full entry</button>
+      <button id="wotd-more" class="secondary">📖 Full dictionary view</button>
     </div>
 
-    <div class="menu-grid" role="list">
-      <button class="game-btn" data-game="flashcards" role="listitem"><span aria-hidden="true">🃏</span> Flashcards<small>Flip &amp; learn with voice</small></button>
-      <button class="game-btn" data-game="quiz" role="listitem"><span aria-hidden="true">❓</span> Meaning Quiz<small>10 questions, 4 choices</small></button>
-      <button class="game-btn" data-game="spelling" role="listitem"><span aria-hidden="true">🐝</span> Spelling Bee<small>Listen &amp; type the word</small></button>
-      <button class="game-btn" data-game="chain" role="listitem"><span aria-hidden="true">⛓️</span> Word Chain vs AI<small>Last-letter battle</small></button>
-      <button class="game-btn" id="btn-review" role="listitem"><span aria-hidden="true">🔁</span> Review Deck<small>Weak words come back until mastered</small></button>
-    </div>
-    <div class="quick-row">
-      <button id="btn-stats" class="quick">📊 Progress</button>
-    </div>
-
-    <div class="level-pick">
-      <label for="level-select">Word difficulty:</label>
-      <select id="level-select">
-        <option value="0">All words</option>
-        <option value="1">Level 1 — Everyday</option>
-        <option value="2">Level 2 — Exam</option>
-        <option value="3" selected>Level 3 — Advanced</option>
-      </select>
-    </div>
-
-    <button id="btn-daily" class="daily">🎁 Claim daily bonus (+25 🪙)</button>
-
-    <details class="howto">
-      <summary>How to play (screen-reader friendly)</summary>
-      <ul>
-        <li><strong>Flashcards:</strong> hear the word, flip for meaning, mark Know or Again.</li>
-        <li><strong>Meaning Quiz:</strong> pick the right meaning from 4 options. Streaks earn bonus coins.</li>
-        <li><strong>Spelling Bee:</strong> the app speaks a word — type it correctly. Use "Hear example" as a hint.</li>
-        <li><strong>Word Chain:</strong> your word must start with the last letter of the AI's word. Only words from the built-in word bank count.</li>
-        <li><strong>Review Deck:</strong> every word you missed is saved here automatically. Review until you know them all.</li>
-      </ul>
-    </details>
-  </main>
-
-  <div id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-title" hidden>
-    <div class="dialog">
-      <h2 id="stats-title">📊 Progress</h2>
-      <dl class="stats-grid">
-        <div><dt>Games played</dt><dd id="st-games">0</dd></div>
-        <div><dt>Words mastered</dt><dd id="st-known">0</dd></div>
-        <div><dt>Review Deck</dt><dd id="st-review">0</dd></div>
+    <div class="card stats-card">
+      <h3>📊 Your Progress</h3>
+      <div class="stats-grid">
+        <div><dt>Games</dt><dd id="st-games">0</dd></div>
+        <div><dt>Known</dt><dd id="st-known">0</dd></div>
+        <div><dt>Review</dt><dd id="st-review">0</dd></div>
         <div><dt>Accuracy</dt><dd id="st-accuracy">—</dd></div>
-        <div><dt>Best streak</dt><dd id="st-best">0</dd></div>
-        <div><dt>Word bank</dt><dd id="st-bank">0</dd></div>
-      </dl>
-      <div class="dialog-actions">
-        <button id="btn-close-stats" class="primary">Done</button>
+        <div><dt>Streak</dt><dd id="st-best">0</dd></div>
+        <div><dt>Bank</dt><dd id="st-bank">0 words</dd></div>
       </div>
+      <button id="btn-daily" class="daily">🎁 Daily +25 🪙</button>
     </div>
-  </div>
+  </section>
 
-  <main id="game-panel" hidden aria-label="Game screen">
-    <div class="game-bar">
-      <button id="btn-home" aria-label="Back to menu">← Menu</button>
-      <h2 id="game-title">Game</h2>
-      <p id="game-status" role="status" aria-live="polite"></p>
-    </div>
-    <div id="game-stage"></div>
-  </main>
+  <details class="howto">
+    <summary>How dictionary works?</summary>
+    <ul>
+      <li><strong>Real Dictionary:</strong> Every word shows meaning, Telugu meaning, synonyms with Telugu and sentence, antonyms with Telugu and sentence, 3-5 real conversation examples, explanation of 3-4 sentences.</li>
+      <li><strong>English → తెలుగు:</strong> You see English word, choose Telugu meaning. Telugu → English opposite.</li>
+      <li><strong>After answer:</strong> You get Correct/Wrong banner + full dictionary card + 3-4 sentence explanation how to use it naturally.</li>
+      <li><strong>Dictionary search:</strong> Type any English or Telugu word to see full entry instantly. Tap 🔊 to hear.</li>
+    </ul>
+  </details>
 
   <div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
     <div class="dialog">
       <h2 id="settings-title">⚙️ Settings</h2>
-      <label class="check"><input id="set-tts" type="checkbox"> Read words and results aloud</label>
+      <label class="check"><input id="set-tts" type="checkbox"> Read words aloud</label>
       <label>Speech speed <span id="rate-val">1.0×</span><input id="set-rate" type="range" min="0.5" max="2" step="0.1"></label>
       <label class="check"><input id="set-sounds" type="checkbox"> Sound effects</label>
       <label class="check"><input id="set-light" type="checkbox"> Light theme</label>
       <label class="check"><input id="set-large" type="checkbox"> Large text</label>
       <div class="dialog-actions">
-        <button id="btn-reset-prog" class="danger">🗑️ Reset coins &amp; progress</button>
+        <button id="btn-reset-prog" class="danger">🗑️ Reset progress</button>
         <button id="btn-close-settings" class="primary">Done</button>
       </div>
     </div>
   </div>
 
   <button id="btn-update" class="daily update-banner" hidden>🔄 New version ready — tap to update</button>
-
   <div id="aria-log" class="sr-only" role="status" aria-live="polite" aria-atomic="false"></div>
   <div id="aria-alert" class="sr-only" role="alert" aria-live="assertive"></div>
 </div>
+
 <script src="words.js"></script>
 <script src="app.js"></script>
 </body>
