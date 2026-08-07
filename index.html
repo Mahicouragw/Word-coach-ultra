@@ -4,134 +4,186 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#f5a623">
-<meta name="description" content="Word Coach Ultra — Real dictionary with meanings, synonyms, antonyms, examples. English↔Telugu academic vocabulary coach.">
-<title>Word Coach Ultra 📚 Real Dictionary & Coach</title>
+<meta name="description" content="Word Coach Ultra v4 — Professional real dictionary: English, Telugu, EN→TE, TE→EN, IPA, synonyms, antonyms, examples, academic & daily usage, fuzzy search, voice search, spaced repetition.">
+<title>Word Coach Ultra v4 📚 Real Dictionary Pro</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 <script type="module" src="auth.js"></script>
 </head>
 <body>
-<a class="skip-link" href="#game-stage">Skip to game</a>
+<a class="skip-link" href="#game-stage">Skip to game content</a>
 <div id="app">
   <header role="banner">
     <div class="brand-row">
       <span class="logo" aria-hidden="true">📚</span>
       <div class="brand">
-        <h1>Word Coach Ultra</h1>
-        <p>Real Dictionary • English ↔ తెలుగు • Academic Coach</p>
+        <h1>Word Coach Ultra <span class="version">v4 Pro</span></h1>
+        <p>Real Dictionary • English ↔ తెలుగు • IPA • Academic • Daily • Offline</p>
       </div>
-      <div class="wallet" role="status" aria-label="Your rewards">
+      <div class="wallet" role="status" aria-live="polite" aria-label="Your rewards and streak">
         <span id="w-coins" title="Coins">🪙 0</span>
         <span id="w-level" title="Level">⭐ Lv 1</span>
         <span id="w-streak" title="Streak">🔥 0</span>
+        <span id="w-xp" title="XP">✨ 0 XP</span>
       </div>
-      <button id="btn-settings" class="hbtn" aria-label="Open settings">⚙️</button>
+      <button id="btn-settings" class="hbtn" aria-label="Open settings — adjust voice, theme, text size">⚙️</button>
     </div>
 
-    <!-- Language selector -->
-    <div class="lang-bar" role="group" aria-label="Select language direction">
+    <div class="lang-bar" role="group" aria-label="Select language direction for quiz">
       <span class="lang-label">Language:</span>
       <button class="lang-pill active" data-lang="mixed" aria-pressed="true">🌐 Mixed</button>
       <button class="lang-pill" data-lang="en-te" aria-pressed="false">🇬🇧 → తెలుగు</button>
       <button class="lang-pill" data-lang="te-en" aria-pressed="false">తెలుగు → 🇬🇧</button>
       <button class="lang-pill" data-lang="en-en" aria-pressed="false">🇬🇧 → English</button>
     </div>
+
+    <div class="difficulty-bar" role="group" aria-label="Difficulty filter">
+      <span class="lang-label">Level:</span>
+      <button class="diff-pill active" data-level="0" aria-pressed="true">All</button>
+      <button class="diff-pill" data-level="1">A2 Everyday</button>
+      <button class="diff-pill" data-level="2">B2 Exam</button>
+      <button class="diff-pill" data-level="3">C1 Academic</button>
+    </div>
   </header>
 
-  <!-- Game mode tabs - game appears immediately, no screenshot -->
-  <nav class="mode-tabs" role="tablist" aria-label="Game modes">
-    <button class="mode-tab active" data-mode="quiz" role="tab" aria-selected="true">❓ Coach Quiz</button>
-    <button class="mode-tab" data-mode="dictionary" role="tab" aria-selected="false">📖 Dictionary</button>
-    <button class="mode-tab" data-mode="flashcards" role="tab" aria-selected="false">🃏 Flashcards</button>
-    <button class="mode-tab" data-mode="spelling" role="tab" aria-selected="false">🐝 Spelling</button>
-    <button class="mode-tab" data-mode="chain" role="tab" aria-selected="false">⛓️ Chain</button>
-    <button class="mode-tab" data-mode="review" role="tab" aria-selected="false">🔁 Review</button>
+  <nav class="mode-tabs" role="tablist" aria-label="Game modes — switch between quiz, dictionary, flashcards, spelling, chain, review, challenge">
+    <button class="mode-tab active" data-mode="quiz" role="tab" aria-selected="true" tabindex="0">❓ Coach Quiz</button>
+    <button class="mode-tab" data-mode="dictionary" role="tab" aria-selected="false" tabindex="-1">📖 Dictionary Pro</button>
+    <button class="mode-tab" data-mode="daily" role="tab" aria-selected="false" tabindex="-1">🎯 Daily Challenge</button>
+    <button class="mode-tab" data-mode="flashcards" role="tab" aria-selected="false" tabindex="-1">🃏 Flashcards</button>
+    <button class="mode-tab" data-mode="spelling" role="tab" aria-selected="false" tabindex="-1">🐝 Spelling</button>
+    <button class="mode-tab" data-mode="listening" role="tab" aria-selected="false" tabindex="-1">🎧 Listening</button>
+    <button class="mode-tab" data-mode="chain" role="tab" aria-selected="false" tabindex="-1">⛓️ Chain</button>
+    <button class="mode-tab" data-mode="review" role="tab" aria-selected="false" tabindex="-1">🔁 Smart Review</button>
   </nav>
 
-  <!-- Real dictionary search - always visible -->
-  <section class="dict-search" aria-label="Dictionary search">
+  <!-- Professional search experience -->
+  <section class="dict-search" aria-label="Intelligent dictionary search — English, Telugu, fuzzy, voice">
     <div class="search-row">
-      <input id="dict-input" type="search" placeholder="Search dictionary: type English or తెలుగు word... e.g. benevolent, పర్యావరణం, fiscal" aria-label="Search dictionary">
-      <button id="dict-clear" class="hbtn" aria-label="Clear search">✕</button>
-      <button id="btn-hear-search" class="primary small" aria-label="Hear search">🔊</button>
+      <input id="dict-input" type="search" placeholder="Intelligent search: English, తెలుగు, partial, prefix, suffix — try 'enviroment' for Did you mean" aria-label="Search dictionary — supports English, Telugu, partial, prefix, suffix, fuzzy, voice" autocomplete="off" spellcheck="false">
+      <button id="dict-voice" class="hbtn" aria-label="Voice search — tap and speak">🎤</button>
+      <button id="dict-clear" class="hbtn" aria-label="Clear search text">✕</button>
+      <button id="btn-hear-search" class="primary small" aria-label="Hear search word">🔊</button>
     </div>
-    <div id="dict-results" class="dict-results" role="listbox" aria-label="Search results"></div>
+
+    <!-- Instant search meta -->
+    <div id="search-meta" class="search-meta" role="status" aria-live="polite"></div>
+
+    <!-- Did you mean -->
+    <div id="did-you-mean" class="did-you-mean" hidden aria-live="polite"></div>
+
+    <!-- Search experience panels -->
+    <div class="search-panels">
+      <div id="dict-results" class="dict-results" role="listbox" aria-label="Dictionary search results with highlighted matches"></div>
+      <div class="search-side">
+        <div id="search-history-panel" class="side-card" aria-label="Search history">
+          <h4>🕘 Recent Searches</h4>
+          <div id="search-history-list" class="tag-list"></div>
+        </div>
+        <div id="recent-words-panel" class="side-card" aria-label="Recently viewed words">
+          <h4>📖 Recently Viewed</h4>
+          <div id="recent-words-list" class="tag-list"></div>
+        </div>
+        <div id="favorites-panel" class="side-card" aria-label="Favorite words">
+          <h4>⭐ Favorites</h4>
+          <div id="favorites-list" class="tag-list"></div>
+        </div>
+        <div id="popular-panel" class="side-card" aria-label="Popular searches">
+          <h4>🔥 Popular</h4>
+          <div id="popular-list" class="tag-list"></div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- Main game - VISIBLE IMMEDIATELY, no hidden screenshot -->
-  <main id="game-panel" aria-label="Game screen">
+  <!-- Main game — appears immediately -->
+  <main id="game-panel" aria-label="Main game screen — quiz, dictionary, flashcards immediately visible">
     <div class="game-bar">
       <h2 id="game-title">❓ Word Coach Quiz</h2>
       <p id="game-status" role="status" aria-live="polite"></p>
       <div class="game-actions">
-        <button id="btn-hear-q" class="hbtn" aria-label="Hear question">🔊</button>
+        <button id="btn-hear-q" class="hbtn" aria-label="Hear current question and word">🔊</button>
+        <button id="btn-fav-q" class="hbtn" aria-label="Add current word to favorites">⭐</button>
       </div>
     </div>
 
-    <!-- This stage is visible from start -->
-    <div id="game-stage" aria-live="polite">
-      <!-- JS will render instantly -->
-      <p class="loading">Loading 583 academic words…</p>
+    <div id="game-stage" aria-live="polite" aria-atomic="false">
+      <p class="loading">Loading professional dictionary — 682 words with IPA, etymology, Telugu, synonyms, antonyms, examples…</p>
     </div>
 
-    <!-- Feedback & dictionary card area - appears after answer -->
-    <div id="feedback-area" hidden>
-      <!-- JS injects result banner + dictionary card -->
-    </div>
+    <div id="feedback-area" hidden></div>
   </main>
 
-  <!-- Extra panels -->
+  <!-- Learning & progress -->
   <section class="bottom-row">
     <div id="wotd" class="card wotd" aria-labelledby="wotd-title">
       <h2 id="wotd-title">🌅 Word of the Day</h2>
       <p class="big-word" id="wotd-word">…</p>
+      <p id="wotd-ipa" class="ipa"></p>
       <p id="wotd-pos" class="pos-tag"></p>
       <p id="wotd-meaning"></p>
       <p class="telugu" id="wotd-telugu"></p>
       <div id="wotd-synant" class="mini-synant"></div>
       <p class="example" id="wotd-example">…</p>
-      <button id="wotd-hear" class="primary">🔊 Hear full entry</button>
-      <button id="wotd-more" class="secondary">📖 Full dictionary view</button>
+      <div class="row">
+        <button id="wotd-hear" class="primary">🔊 Hear full entry</button>
+        <button id="wotd-more" class="secondary">📖 Full dictionary view</button>
+        <button id="wotd-fav" class="hbtn" aria-label="Favorite word of the day">⭐ Favorite</button>
+      </div>
     </div>
 
     <div class="card stats-card">
-      <h3>📊 Your Progress</h3>
+      <h3>📊 Your Progress & Achievements</h3>
       <div class="stats-grid">
         <div><dt>Games</dt><dd id="st-games">0</dd></div>
         <div><dt>Known</dt><dd id="st-known">0</dd></div>
-        <div><dt>Review</dt><dd id="st-review">0</dd></div>
+        <div><dt>Review Due</dt><dd id="st-review">0</dd></div>
         <div><dt>Accuracy</dt><dd id="st-accuracy">—</dd></div>
-        <div><dt>Streak</dt><dd id="st-best">0</dd></div>
+        <div><dt>Best Streak</dt><dd id="st-best">0</dd></div>
         <div><dt>Bank</dt><dd id="st-bank">0 words</dd></div>
       </div>
-      <button id="btn-daily" class="daily">🎁 Daily +25 🪙</button>
+      <div id="achievements-list" class="achievements" aria-label="Achievements"></div>
+      <button id="btn-daily" class="daily">🎁 Daily +25 🪙 — Daily Challenge inside!</button>
+      <button id="btn-stats-more" class="secondary" style="width:100%;margin-top:.5rem">📈 Detailed Stats & Spaced Repetition</button>
     </div>
   </section>
 
   <details class="howto">
-    <summary>How dictionary works?</summary>
+    <summary>How professional dictionary works? (Real dictionary, fuzzy search, voice)</summary>
     <ul>
-      <li><strong>Real Dictionary:</strong> Every word shows meaning, Telugu meaning, synonyms with Telugu and sentence, antonyms with Telugu and sentence, 3-5 real conversation examples, explanation of 3-4 sentences.</li>
-      <li><strong>English → తెలుగు:</strong> You see English word, choose Telugu meaning. Telugu → English opposite.</li>
-      <li><strong>After answer:</strong> You get Correct/Wrong banner + full dictionary card + 3-4 sentence explanation how to use it naturally.</li>
-      <li><strong>Dictionary search:</strong> Type any English or Telugu word to see full entry instantly. Tap 🔊 to hear.</li>
+      <li><strong>Real Dictionary v4:</strong> Each word shows English definitions, Telugu meanings, POS, pronunciation, IPA, root, origin/etymology, synonyms+sentence+TELUGU, antonyms+sentence+TELUGU, idioms, phrasal verbs, collocations, formal/informal/academic/daily usage, 3-5 natural examples, 3 Telugu examples, 3-4 sentence explanation, common mistakes, related words, word family, difficulty & frequency.</li>
+      <li><strong>Intelligent Search:</strong> English, Telugu, mixed, partial, prefix, suffix, contains, case-insensitive, accent-insensitive, fuzzy edit-distance, Did you mean (e.g., enviroment → Environment), highlight matching letters, instant while typing, voice search 🎤, history, recent, favorites, popular.</li>
+      <li><strong>Quiz:</strong> EN→TE, TE→EN, EN→EN, Mixed. After answer shows Correct/Wrong + why + full dict card + IPA + synonyms/antonyms/examples/explanation + hear again.</li>
+      <li><strong>Learning:</strong> Daily Challenge 🎯, WOTD, streak 🔥, XP ✨, coins 🪙, achievements, smart review with spaced repetition, flashcards, spelling, listening, bookmark ⭐, recent 🕘.</li>
+      <li><strong>Offline:</strong> Previously viewed entries cached, works offline via service worker.</li>
     </ul>
   </details>
 
   <div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
     <div class="dialog">
-      <h2 id="settings-title">⚙️ Settings</h2>
-      <label class="check"><input id="set-tts" type="checkbox"> Read words aloud</label>
-      <label>Speech speed <span id="rate-val">1.0×</span><input id="set-rate" type="range" min="0.5" max="2" step="0.1"></label>
+      <h2 id="settings-title">⚙️ Settings Pro</h2>
+      <label class="check"><input id="set-tts" type="checkbox"> Read words aloud (TalkBack compatible)</label>
+      <label>Speech speed <span id="rate-val">1.0×</span><input id="set-rate" type="range" min="0.5" max="2" step="0.1" aria-label="Speech speed"></label>
       <label class="check"><input id="set-sounds" type="checkbox"> Sound effects</label>
-      <label class="check"><input id="set-light" type="checkbox"> Light theme</label>
-      <label class="check"><input id="set-large" type="checkbox"> Large text</label>
+      <label class="check"><input id="set-light" type="checkbox"> Light theme (high contrast)</label>
+      <label class="check"><input id="set-large" type="checkbox"> Large text & large touch targets (accessibility)</label>
+      <label class="check"><input id="set-highlight" type="checkbox" checked> Highlight search matches</label>
       <div class="dialog-actions">
+        <button id="btn-clear-cache" class="secondary">🧹 Clear offline cache</button>
         <button id="btn-reset-prog" class="danger">🗑️ Reset progress</button>
         <button id="btn-close-settings" class="primary">Done</button>
       </div>
+      <p class="progress-line">Voice search uses Web Speech API if supported. Fuzzy search uses Levenshtein edit distance. All dictionary data is real, not AI-generated, with optional LLM explanations.</p>
+    </div>
+  </div>
+
+  <div id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title" hidden>
+    <div class="dialog" style="width:min(92vw,560px)">
+      <h2 id="stats-modal-title">📈 Detailed Progress & SRS</h2>
+      <div id="stats-detailed"></div>
+      <div class="dialog-actions"><button id="btn-close-stats" class="primary">Close</button></div>
     </div>
   </div>
 
@@ -140,7 +192,14 @@
   <div id="aria-alert" class="sr-only" role="alert" aria-live="assertive"></div>
 </div>
 
+<!-- Professional modular architecture — classic scripts for zero-build, offline-friendly -->
 <script src="words.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/search.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/srs.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
