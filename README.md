@@ -23,8 +23,9 @@ Any static host — no build step:
 ```bash
 python3 -m http.server    # then open http://localhost:8000
 ```
-GitHub Pages: Settings → Pages → Deploy from branch → `main` / root.
-Vercel/Netlify: import this repo, framework = "Other", output = root.
+**Live web app:** https://mahicouragw.github.io/Word-coach-ultra/
+
+GitHub Pages deploys automatically from `main`. Vercel is not the canonical deployment for this app.
 
 ## 📦 Word bank
 120 curated words across 3 levels (everyday → exam → advanced/competitive, e.g. *democracy, subsidy, sovereignty*), each with meaning, Telugu gloss, example sentence. Edit `words.js` to add more.
@@ -41,3 +42,7 @@ Vercel/Netlify: import this repo, framework = "Other", output = root.
   shows a "New version ready" button; no more being stuck on an old build.
 - ♿ **Accessible auth dialogs** — focus trap, Escape to close, inline error
   messages instead of alert(), no auto-submit while typing the OTP.
+
+## v2.0.1 — Android release refresh
+
+The Android wrapper version now matches the current web app and tagged builds publish a consistently named `WordCoachUltra.apk`. The supported web URL is GitHub Pages, not the retired Vercel deployment.

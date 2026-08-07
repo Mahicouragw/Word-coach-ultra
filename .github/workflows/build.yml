@@ -4,13 +4,52 @@ on:
   workflow_dispatch:
   push:
     branches: [main, master]
+    tags: ['android-*']
+
+permissions:
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate JS + word bank
+      - name: Validate JS + word bank + PWA
         run: |
           node -e "new Function(require('fs').readFileSync('app.js','utf8')); console.log('app.js OK')"
-          node -e "new Function(require('fs').readFileSync('words.js','utf8').replace('window.WORD_BANK','const WB')); console.log('words.js OK (' + require('fs').readFileSync('words.js','utf8').match(/\[/g).length + ' entries)')"
+          node -e "new Function(require('fs').readFileSync('words.js','utf8').replace('window.WORD_BANK','const WB')); console.log('words.js OK (' + require('fs').readFileSync('words.js','utf8').match(/\\[/g).length + ' entries)')"
+          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest')); if(m.display!=='standalone'||!m.icons||m.icons.length<2) throw Error('Invalid PWA manifest'); console.log('PWA manifest OK')"
+
+  apk:
+    if: startsWith(github.ref, 'refs/tags/android-') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Prepare and build Android APK
+        working-directory: flutter_apk
+        run: |
+          flutter pub get
+          if [ ! -d android ]; then
+            flutter create --platforms=android --org com.mahicouragw --project-name word_coach_apk .
+          fi
+          flutter build apk --debug
+      - name: Normalize APK filename
+        run: cp flutter_apk/build/app/outputs/flutter-apk/app-debug.apk WordCoachUltra.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WordCoachUltra.apk
+          path: WordCoachUltra.apk
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/android-')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: WordCoachUltra.apk
+          generate_release_notes: true
