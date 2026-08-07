@@ -40,9 +40,12 @@ jobs:
           if [ ! -d android ]; then
             flutter create --platforms=android --org com.mahicouragw --project-name word_coach_apk .
           fi
-          flutter build apk --debug
+          # Split by ABI to reduce Gradle memory pressure and avoid transforming
+          # unused desktop-emulator engine JARs. The arm64 APK covers current
+          # Android phones and tablets.
+          flutter build apk --debug --split-per-abi --target-platform android-arm64
       - name: Normalize APK filename
-        run: cp flutter_apk/build/app/outputs/flutter-apk/app-debug.apk WordCoachUltra.apk
+        run: cp flutter_apk/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk WordCoachUltra.apk
       - uses: actions/upload-artifact@v4
         with:
           name: WordCoachUltra.apk
